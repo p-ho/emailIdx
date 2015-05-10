@@ -51,5 +51,5 @@ def try_filter_plain_text(message_part, filter_method):
 def is_plain_text(message_part, filter_method):
     return message_part['content_type']['_type'].startswith('text/')
 
-def __get_content_filter_functions__():
+def __get_content_filter_functions__(settings):
     return (is_plain_text, try_filter_plain_text)

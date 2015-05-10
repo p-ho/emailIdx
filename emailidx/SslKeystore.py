@@ -23,7 +23,7 @@
 #########################################################################################
 import os, sys, errno
 from M2Crypto import X509, EVP
-from emailidx.settings import Settings
+from emailidx import Settings
 #########################################################################################
 #                                 Global Variables                                      #
 #########################################################################################
@@ -83,8 +83,8 @@ def fill_keystore():
     Loads S/MIME keys from the directory specified by settings to the in-memory keystore.
     (The keyfiles must be named *.pem for public certificate and *.key for private key)
     """
-    if Settings.SSL_CERTS_DIR is not None:
-        load_keys_from_directory(Settings.SSL_CERTS_DIR)
+    if Settings.settings['misc']['ssl_certs_dir'] is not None:
+        load_keys_from_directory(Settings.settings['misc']['ssl_certs_dir'])
 
         
 

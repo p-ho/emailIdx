@@ -36,15 +36,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='emailidx',
-    version='0.1.3',
+    version='0.2.0',
 
     description='Synchronizes emails from IMAP to Elasticsearch',
     author='Paul Hofmann',
     author_email='p.h.o@web.de',
     license='GPLv3',
-    
-    # Let the settings file be editable
-    zip_safe=False,
 
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -71,7 +68,7 @@ setup(
 
     packages=find_packages(),
 
-    install_requires=['elasticsearch', 'imaplib2', 'M2Crypto', 'python-gnupg', 'beautifulsoup4', 'pdfminer', 'python-docx'],
+    install_requires=['elasticsearch', 'imaplib2', 'M2Crypto', 'python-gnupg', 'beautifulsoup4', 'pdfminer', 'python-docx', 'commentjson'],
     
     entry_points={
         'console_scripts': [

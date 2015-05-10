@@ -21,8 +21,8 @@
 #########################################################################################
 #                                      Imports                                          #
 #########################################################################################
-from emailidx import EmailSerializer, CertificateVerifier
-from emailidx.settings import Settings
+from emailidx import EmailSerializer, CertificateVerifier, Settings
+#from emailidx.settings import Settings
 from imaplib2 import imaplib2
 from M2Crypto import X509
 import re, sys
@@ -66,23 +66,23 @@ def verify_connection_security(imap_connection):
     In case the certificate is invalid, emailidx.CertificateVerifier.InsecureCertificateError is raised.
     If no encryption is used (IMAP_TLS_METHOD='PLAIN'), NO check will be performed.
     """
-    if Settings.IMAP_TLS_METHOD in ('SSL/TLS', 'STARTTLS'):
+    if Settings.settings['imap']['tls_method'] in ('SSL/TLS', 'STARTTLS'):
         peer_cert = get_peer_certificate_of_connection(imap_connection)
-        CertificateVerifier.CERTIFICATE_VERIFY_METHOD[Settings.IMAP_TLS_VERIFY_METHOD](peer_cert, Settings.IMAP_HOST)
+        CertificateVerifier.CERTIFICATE_VERIFY_METHOD[Settings.settings['imap']['tls_verify_method']](peer_cert, Settings.settings['imap']['credentials']['host'])
     
 
 def open_connection():
     """
     Opens IMAP connection and tries to log in as specified in the settings.
     """
-    tls_method = TLS_METHOD[Settings.IMAP_TLS_METHOD]
+    tls_method = TLS_METHOD[Settings.settings['imap']['tls_method']]
     
     if tls_method['USE_SSL']:
-        the_port = Settings.IMAP_PORT if Settings.IMAP_PORT is not None else  imaplib2.IMAP4_SSL_PORT
-        imap_connection = imaplib2.IMAP4_SSL(Settings.IMAP_HOST, the_port)
+        the_port = Settings.settings['imap']['port'] if Settings.settings['imap']['port'] is not None else  imaplib2.IMAP4_SSL_PORT
+        imap_connection = imaplib2.IMAP4_SSL(Settings.settings['imap']['credentials']['host'], the_port)
     else:
-        the_port = Settings.IMAP_PORT if Settings.IMAP_PORT is not None else  imaplib2.IMAP4_PORT
-        imap_connection = imaplib2.IMAP4(Settings.IMAP_HOST, the_port)
+        the_port = Settings.settings['imap']['port'] if Settings.settings['imap']['port'] is not None else  imaplib2.IMAP4_PORT
+        imap_connection = imaplib2.IMAP4(Settings.settings['imap']['credentials']['host'], the_port)
         
     if tls_method['USE_STARTTLS']:
         imap_connection.starttls()
@@ -94,10 +94,10 @@ def open_connection():
         print >>sys.stderr, "[IMAP] \"%s\"" % icerr.message
         sys.exit(-1)
         
-    if Settings.IMAP_USE_CRAM_MD5:
-        imap_connection.login_cram_md5(Settings.IMAP_USER, Settings.IMAP_PW)
+    if Settings.settings['imap']['use_cram_transfer']:
+        imap_connection.login_cram_md5(Settings.settings['imap']['credentials']['user'], Settings.settings['imap']['credentials']['password'])
     else:
-        imap_connection.login(Settings.IMAP_USER, Settings.IMAP_PW)
+        imap_connection.login(Settings.settings['imap']['credentials']['user'], Settings.settings['imap']['credentials']['password'])
         
     return imap_connection
     
@@ -136,7 +136,7 @@ def get_message_in_current_mailbox(imap_connection, message_id):
             msg_as_rfc822 = response_part[1]
             the_email = { 'raw_message': msg_as_rfc822 }
             the_email = EmailSerializer.serialize_email_with_context(the_email)
-            if not Settings.SYNC_KEEP_RAW_MESSAGE:
+            if not Settings.settings['sync_behavior']['keep_raw_messages']:
                 del the_email['raw_message']
             return the_email
     return None
@@ -178,7 +178,7 @@ def fetch_all_emails_from_connection(imap_connection):
     messages = {}
     for mbx in get_mailboxes(imap_connection):
         mbx_name = mbx['mailbox_name']
-        if mbx_name not in Settings.SYNC_EXCLUDED_MAILBOXES:
+        if mbx_name not in Settings.settings['sync_behavior']['excluded_mailboxes']:
             if 'Noselect' not in mbx['flags']:
                 msgs_by_hash = get_all_messages_in_mailbox(imap_connection, mbx_name)
                 if msgs_by_hash:

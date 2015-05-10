@@ -19,7 +19,7 @@
 #
 #
 #########################################################################################
-#                                        Imports                                        #
+#                             Imports & Global variables                                #
 #########################################################################################
 import StringIO, base64, sys, getpass
 from pdfminer.pdfdocument import PDFDocument, PDFPasswordIncorrect
@@ -28,7 +28,8 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
-from emailidx.settings import Settings
+
+pdfsettings = None
 #########################################################################################
 #                                   Helper Functions                                    #
 #########################################################################################
@@ -71,10 +72,10 @@ def actual_parse_pdf(pdf_data):
             pw_accepted = True
             
         except PDFPasswordIncorrect, pwex:
-            if len(Settings.PDF_PASSWORDS) > curr_pw_idx:
-                password = Settings.PDF_PASSWORDS[curr_pw_idx]
+            if len(pdfsettings['passwords']) > curr_pw_idx:
+                password = pdfsettings['passwords'][curr_pw_idx]
                 curr_pw_idx += 1
-            elif Settings.PDF_ASK_PASSWORD:
+            elif pdfsettings['ask_password']:
                 password = getpass.getpass("PDF password:")
                 if password == '':
                     raise  pwex
@@ -123,6 +124,8 @@ def try_parse_pdf(message_part, filter_method):
             print >>sys.stderr, "[%s] %s encoding is not supported." % (filter_method, ctenc)
         
         
-def __get_content_filter_functions__():
+def __get_content_filter_functions__(settings):
+    global pdfsettings
+    pdfsettings = settings
     return (is_pdf, try_parse_pdf)
 

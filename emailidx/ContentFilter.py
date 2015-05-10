@@ -21,34 +21,37 @@
 #########################################################################################
 #                             Imports & Global variables                                #
 #########################################################################################
-from emailidx.settings import InstalledContentFilters
+#####from emailidx.settings import InstalledContentFilters
+from emailidx import Settings
 import sys
 #########################################################################################
 #                                  Helper Functions                                     #
 #########################################################################################
-def _try_filter_content(message_part, id_to_display, filter_description):
+def _try_filter_content(message_part, id_to_display, content_filter):
     """
     Applies given content filter on the message part
     """
-    (filter_method, content_filter) = filter_description
+    filter_method = content_filter.id
+    content_filter_module = content_filter.import_module()
     try:
-        filter_method_funcs = content_filter.__get_content_filter_functions__()
+        # TODO: Add settings
+        filter_method_funcs = content_filter_module.__get_content_filter_functions__(content_filter.settings)
         if filter_method_funcs[0](message_part, filter_method):
             filter_method_funcs[1](message_part, filter_method)
     except:
         print >>sys.stderr, "[%s] Error with message %s" % (filter_method, id_to_display)
     
 
-def _apply_content_filters_on_message_part(message_part, id_to_display, filter_description):
+def _apply_content_filters_on_message_part(message_part, id_to_display, content_filter):
     """
     Applies given content filter on a part of a message recursively
     """
-    _try_filter_content(message_part, id_to_display, filter_description)
+    _try_filter_content(message_part, id_to_display, content_filter)
     if ('message_decrypted' in message_part) and (message_part['message_decrypted'] is not None):
-        _apply_content_filters_on_message_part(message_part['message_decrypted'], id_to_display, filter_description)
+        _apply_content_filters_on_message_part(message_part['message_decrypted'], id_to_display, content_filter)
     if message_part['child_messages'] is not None:
         for child_msg in message_part['child_messages']:
-            _apply_content_filters_on_message_part(child_msg, id_to_display, filter_description)
+            _apply_content_filters_on_message_part(child_msg, id_to_display, content_filter)
 #########################################################################################
 #                                      Functions                                        #
 #########################################################################################
@@ -56,11 +59,19 @@ def apply_content_filters_on_email(email):
     """
     Applies all 'installed content filters' on the given serializable email message.
     """
+    for content_filter in Settings.content_filters:
+        id_to_display = email['msg_id'] if email['msg_id'] is not None else "Unknown"
+        print "[%s] Filtering %s..." % (content_filter.id, id_to_display)
+        _apply_content_filters_on_message_part(email['message'], id_to_display, content_filter)
+    
+    ####
+    '''
     for filter_description in InstalledContentFilters.FILTER_METHODS:  
         id_to_display = email['msg_id'] if email['msg_id'] is not None else "Unknown"
         print "[%s] Filtering %s..." % (filter_description[0], id_to_display)
         _apply_content_filters_on_message_part(email['message'], id_to_display, filter_description)
-
+    '''
+    ####
 
 def apply_content_filters_on_email_data(email_data):
     """
