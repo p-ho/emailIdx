@@ -25,8 +25,8 @@ import StringIO, base64, sys
 from docx import Document
 from docx.oxml.table import CT_Tbl
 from docx.table import Table
-from docx.oxml.text import CT_P
-from docx.text import Paragraph
+from docx.oxml.text.paragraph import CT_P
+from docx.text.paragraph import Paragraph
 #########################################################################################
 #                                    Actual Parsing                                     #
 #########################################################################################
