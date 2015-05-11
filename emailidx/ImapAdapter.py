@@ -22,7 +22,6 @@
 #                                      Imports                                          #
 #########################################################################################
 from emailidx import EmailSerializer, CertificateVerifier, Settings
-#from emailidx.settings import Settings
 from imaplib2 import imaplib2
 from M2Crypto import X509
 import re, sys

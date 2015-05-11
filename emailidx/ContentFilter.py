@@ -21,7 +21,6 @@
 #########################################################################################
 #                             Imports & Global variables                                #
 #########################################################################################
-#####from emailidx.settings import InstalledContentFilters
 from emailidx import Settings
 import sys
 #########################################################################################
@@ -41,7 +40,6 @@ def _try_filter_content(message_part, id_to_display, content_filter):
     except:
         print >>sys.stderr, "[%s] Error with message %s" % (filter_method, id_to_display)
     
-
 def _apply_content_filters_on_message_part(message_part, id_to_display, content_filter):
     """
     Applies given content filter on a part of a message recursively
@@ -63,15 +61,6 @@ def apply_content_filters_on_email(email):
         id_to_display = email['msg_id'] if email['msg_id'] is not None else "Unknown"
         print "[%s] Filtering %s..." % (content_filter.id, id_to_display)
         _apply_content_filters_on_message_part(email['message'], id_to_display, content_filter)
-    
-    ####
-    '''
-    for filter_description in InstalledContentFilters.FILTER_METHODS:  
-        id_to_display = email['msg_id'] if email['msg_id'] is not None else "Unknown"
-        print "[%s] Filtering %s..." % (filter_description[0], id_to_display)
-        _apply_content_filters_on_message_part(email['message'], id_to_display, filter_description)
-    '''
-    ####
 
 def apply_content_filters_on_email_data(email_data):
     """

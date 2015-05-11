@@ -18,17 +18,6 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-# # BEGIN EXPERIMENT
-"""
-import sys, os
-from emailidx import Settings
-print Settings.init_settings()
-
-print Settings.content_filters
-
-sys.exit()
-"""
-# # END EXPERIMENT
 #########################################################################################
 #                                      Imports                                          #
 #########################################################################################
