@@ -1,0 +1,136 @@
+#
+#    emailIdx - Synchronizes emails from IMAP to Elasticsearch
+#    Copyright (C) 2015 Paul Hofmann
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+
+{
+	//
+	// Settings concerning the IMAP-Server
+	//
+	"imap": {
+		// Used TLS method for IMAP connection
+		// - possible values: 'PLAIN', 'SSL/TLS' or 'STARTTLS'
+		"tls_method": "PLAIN",
+		// Method used to verify authenticity of the peer certificate
+		// - You may refer to CertificateVerifier.CERTIFICATE_VERIFY_METHOD for possible values
+		"tls_verify_method": "CHECK_CNAME_ONLY",
+		// Use CRAM-MD5 for password transfer
+		"use_cram_transfer": false,
+		// Port to use (set null for default port)
+		"port": null,
+		// credentials
+		"credentials": {
+			"host": "localhost",
+			"user": "user_name",
+			"password": "the_pw"
+		}
+	},
+	//
+	// Settings concerning the Elasticsearch-Server
+	//
+	"elasticsearch": {
+		// Elasticsearch cluster description
+		// - cf. https://elasticsearch-py.readthedocs.org/en/master/api.html#elasticsearch
+		"hosts": [
+			{"host": "localhost", "port" : 9200}
+		],
+		// type and index to use for the DB (There's no need to change them)
+		"type_email": "email",
+		"index_emails": "emails"
+	},
+	//
+	// Settings concerning the behavior of the sync process
+	//
+	"sync_behavior": {
+		// Reset entire index before each sync
+		// - You shouldn't set it to True in produnction, only for debugging
+		"reset_db_before_sync": false,
+		// Delete emails in DB as they are deleted in IMAP
+		"sync_delete": true,
+		// Exclude mailboxes from sync
+		"excluded_mailboxes": ["Trash"],
+		// Copy raw RFC822 message to Elasticsearch
+		"keep_raw_messages": false
+	},
+	//
+	// Miscellaneous settings
+	//
+	"misc": {
+		// Path to the S/MIME certificates (set null if you don't use S/MIME certs)
+		// - Public certificates must be provided as <name>.pem
+		// - Private keys must be provided as <name>.key
+		// - Where <name> must equal for corresponding key and certificate
+		"ssl_certs_dir": null
+	},
+	//
+	// Settings concerning the plugged in content filters
+	//
+	"contentfilters": {
+		// Define order in which the filters are loaded
+		// omit an filter in order to deactivate it
+		"order": ["S/MIME", "PGP/MIME", "PLAIN_TXT", "HTML", "PDF", "DOCX"],
+		// Actual declaration of the contentfilters
+		"filters": {
+			//
+			// Decrypts S/MIME-encrypted messages
+			//
+			"S/MIME": {
+				"py_module": "SMimeDecryption"
+			},
+			//
+			// Decrypts PGP/MIIME-encrypted messages
+			//
+			"PGP/MIME": {
+				"py_module": "PgpDecryption",
+				"settings": {
+					// GPG home directory (set null for default)
+					"gpg_home": null
+				}
+			},
+			//
+			// Decodes plain text
+			//
+			"PLAIN_TXT": {
+				"py_module": "PlainTextDecoder"
+			},
+			//
+			// Extracts plain text from HTML
+			//
+			"HTML": {
+				"py_module": "HTMLParsing"
+			},
+			//
+			// Extracts plain text from PDF
+			//
+			"PDF": {
+				"py_module": "PdfParsing",
+				"settings": {
+					// Ask interactively for PDF decryption password
+					"ask_password": false,
+					// Predefined list of passwords to try for PDF decryption
+					"passwords": ["exa", "mple"]
+				}
+			},
+			// 
+			// Extracts plain text from DOCX
+			//
+			"DOCX": {
+				"py_module": "DocxParsing"
+			}
+		}
+	}
+}

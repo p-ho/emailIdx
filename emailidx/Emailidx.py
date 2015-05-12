@@ -21,8 +21,8 @@
 #########################################################################################
 #                                      Imports                                          #
 #########################################################################################
-from emailidx import ElasticAdapter, SslKeystore, DiffMails, ContentFilter, ImapAdapter
-from emailidx.settings import Settings
+import sys
+# emailidx imports are performed "on-the-fly"
 #########################################################################################
 #                                   Main Function                                       #
 #########################################################################################
@@ -47,36 +47,47 @@ This is free software, and you are welcome to redistribute it under certain cond
 For details refer to the GNU General Public License, version 3.
 <http://opensource.org/licenses/GPL-3.0>
 """
+
+    from emailidx import Settings
+    print "[EIDX] Loading settings..."
+    if not Settings.init_settings():
+        print >> sys.stderr, "[INI_ERR] ERROR while reading settings."
+        sys.exit(1)
     
-    
+    from emailidx import SslKeystore
     print "[EIDX] Loading S/MIME keys..."
     SslKeystore.fill_keystore()
+    
+    from emailidx import ImapAdapter
     print "[EIDX] Fetching emails..."
     email_tree_imap = ImapAdapter.fetch_all_emails_via_imap()
     
-    if Settings.RESET_DB_BEFORE_SYNC:
+    from emailidx import ElasticAdapter
+    if Settings.settings['sync_behavior']['reset_db_before_sync']:
         email_tree_es = {}
     else:
         print "[EIDX] Fetching DB data..."
         email_tree_es = ElasticAdapter.get_email_ids_sorted_by_mailbox()
         
+    from emailidx import DiffMails
     print "[EIDX] Calculating diff..."
     diff_overlaps = DiffMails.diff_mailbox_structures(email_tree_imap, email_tree_es)
     emails_to_add = diff_overlaps['imap_overlap']
     print "[EIDX] emails to add:    %i" % len(emails_to_add)
     
-    if Settings.SYNC_DELETE:
+    if Settings.settings['sync_behavior']['sync_delete']:
         emails_to_delete = diff_overlaps['es_overlap']
     else:
         emails_to_delete = []
         
-    nmb_to_delete = 'ANY' if Settings.RESET_DB_BEFORE_SYNC else str(len(emails_to_delete))
+    nmb_to_delete = 'ANY' if Settings.settings['sync_behavior']['reset_db_before_sync'] else str(len(emails_to_delete))
     print "[EIDX] emails to remove: %s" % nmb_to_delete
         
+    from emailidx import ContentFilter
     print "[EIDX] Applying content filters..."
     ContentFilter.apply_content_filters_on_email_data(emails_to_add)
     
-    if Settings.RESET_DB_BEFORE_SYNC:
+    if Settings.settings['sync_behavior']['reset_db_before_sync']:
         print "[EIDX] Resetting DB..."
         ElasticAdapter.delete_database()
         

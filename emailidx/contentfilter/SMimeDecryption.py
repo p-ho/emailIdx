@@ -81,7 +81,7 @@ def is_smime(message_part, crypto_method):
     return (content_type['_type'] == 'application/pkcs7-mime') and (content_type['smime-type'] == 'enveloped-data')
 
 
-def __get_content_filter_functions__():
+def __get_content_filter_functions__(settings):
     return (is_smime, try_decrypt_smime)
     
 

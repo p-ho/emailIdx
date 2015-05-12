@@ -21,11 +21,11 @@
 #########################################################################################
 #                             Imports & Global variables                                #
 #########################################################################################
+from emailidx import Settings
 from elasticsearch import Elasticsearch
 import elasticsearch.helpers
-from emailidx.settings import Settings
 
-_es = Elasticsearch(hosts=Settings.ES_HOSTS)
+_es = Elasticsearch(hosts=Settings.settings['elasticsearch']['hosts'])
 #########################################################################################
 #                                      Generators                                       #
 #########################################################################################
@@ -37,16 +37,16 @@ def _generate_email_data_for_bulk_index(to_add, to_delete):
         msg_id = email['msg_id'] if email['msg_id'] else "[UNKNOWN]"
         print "[ES] Archiving %s ..." % msg_id
         yield {
-                '_index' : Settings.ES_INDEX_EMAILS,
-                '_type' : Settings.ES_TYPE_EMAIL,
+                '_index' : Settings.settings['elasticsearch']['index_emails'],
+                '_type' : Settings.settings['elasticsearch']['type_email'],
                 '_source' : email,
                }
     for entry_id in to_delete:
         print "[ES] Deleting %s ..." % entry_id
         yield {
                 '_op_type':  'delete',
-                '_index': Settings.ES_INDEX_EMAILS,
-                '_type': Settings.ES_TYPE_EMAIL,
+                '_index': Settings.settings['elasticsearch']['index_emails'],
+                '_type': Settings.settings['elasticsearch']['type_email'],
                 '_id': entry_id
                }
 #########################################################################################
@@ -56,7 +56,7 @@ def database_exists():
     """
     Returns if the database (index & type) exists.
     """
-    return _es.indices.exists_type(index=Settings.ES_INDEX_EMAILS, doc_type=Settings.ES_TYPE_EMAIL)
+    return _es.indices.exists_type(index=Settings.settings['elasticsearch']['index_emails'], doc_type=Settings.settings['elasticsearch']['type_email'])
 
 def delete_database():
     """
@@ -64,7 +64,7 @@ def delete_database():
     Doesn't fail if the db doesn't exist.
     """
     if database_exists():
-        _es.indices.delete(index=Settings.ES_INDEX_EMAILS)
+        _es.indices.delete(index=Settings.settings['elasticsearch']['index_emails'])
         
 def create_database():
     """
@@ -72,7 +72,7 @@ def create_database():
     """
     basic_fields_mapping = {
         'mappings': {
-            Settings.ES_TYPE_EMAIL: {
+            Settings.settings['elasticsearch']['type_email']: {
                 'properties': {
                     'hash': {
                         'type': 'string',
@@ -94,7 +94,7 @@ def create_database():
             }
         }
     }
-    _es.indices.create(Settings.ES_INDEX_EMAILS, basic_fields_mapping)
+    _es.indices.create(Settings.settings['elasticsearch']['index_emails'], basic_fields_mapping)
 
 
 def save_email_data_to_db(to_add, to_delete):
@@ -117,7 +117,7 @@ def get_email_ids_sorted_by_mailbox():
     Returns a dictionary containing the ids of all emails in the db sorted by mailbox and hash.
     """
     if database_exists():
-        query_result = elasticsearch.helpers.scan(_es, index=Settings.ES_INDEX_EMAILS, doc_type=Settings.ES_TYPE_EMAIL, fields='hash,mailbox')
+        query_result = elasticsearch.helpers.scan(_es, index=Settings.settings['elasticsearch']['index_emails'], doc_type=Settings.settings['elasticsearch']['type_email'], fields='hash,mailbox')
         mbx_hashlist = {}
         for hit in query_result:
             the_mbx = hit['fields']['mailbox'][0]

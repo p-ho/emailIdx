@@ -74,5 +74,5 @@ def try_parse_docx(message_part, filter_method):
         else:
             print >>sys.stderr, "[%s] %s encoding is not supported." % (filter_method, ctenc)
         
-def __get_content_filter_functions__():
+def __get_content_filter_functions__(settings):
     return (is_docx, try_parse_docx)

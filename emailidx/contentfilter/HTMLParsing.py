@@ -46,5 +46,5 @@ def is_html(message_part, filter_method):
         and 'content_parsed' in message_part \
         and 'txt_contents' in message_part['content_parsed']
 
-def __get_content_filter_functions__():
+def __get_content_filter_functions__(settings):
     return (is_html, try_extract_text_from_html)

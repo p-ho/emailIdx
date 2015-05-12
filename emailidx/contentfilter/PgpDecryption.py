@@ -19,16 +19,17 @@
 #
 #
 #########################################################################################
-#                                        Imports                                        #
+#                             Imports & Global variables                                #
 #########################################################################################
 import gnupg
 from emailidx import EmailSerializer
-from emailidx.settings import Settings
+
+gpg_home = None
 #########################################################################################
 #                                   Actual Decryption                                   #
 #########################################################################################
 def actual_decrypt_message(message):
-    gpg = gnupg.GPG(gnupghome=Settings.GPG_HOME)
+    gpg = gnupg.GPG(gnupghome=gpg_home)
     decrypted_data = gpg.decrypt(message)
 
     return EmailSerializer.serialize_email_raw_message(str(decrypted_data)) \
@@ -56,6 +57,8 @@ def is_pgp_mime(message_part, crypto_method):
     return (content_type['_type'] == 'multipart/encrypted') and (content_type['protocol'] == 'application/pgp-encrypted')
 
 
-def __get_content_filter_functions__():
+def __get_content_filter_functions__(settings):
+    global gpg_home
+    gpg_home = settings['gpg_home']
     return (is_pgp_mime, try_decrypt_pgp_mime)
     
