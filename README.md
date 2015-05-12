@@ -1,5 +1,11 @@
 # emailIdx
-Synchronizes emails from IMAP to Elasticsearch
+**emailIdx** synchronizes emails from IMAP to Elasticsearch as depicted by the following figure.
+These emails are processed by the pluggable *Content Filters* that transform the emails by
+extracting plain text content from them by different means. The *Content Filters* are defined at
+https://github.com/p-ho/emailIdx/tree/master/emailidx/contentfilter and configured in the
+settings file ([see below](#adjust-settings)).
+
+![emailIdx overview](./doc_img/emailidx_overview.png?raw=true "emailIdx overview")
 
 ## Dependencies
 First of all you need to install some dependencies which are:
