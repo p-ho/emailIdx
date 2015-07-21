@@ -22,7 +22,7 @@ Of course you also need to run an IMAP server and an Elasticsearch server on whi
 But these don't need to run on the same machine as `emailIdx`
 
 ## Installing
-Before you perform the actual install you may would like to set up a virtuale environment and activate it, e.g.:
+Before you perform the actual install you may would like to set up a virtual environment and activate it, e.g.:
 ```bash
 $ virtualenv EIDX_ENV
 $ . EIDX_ENV/bin/activate
@@ -48,6 +48,6 @@ $ emailidx
 ```
 
 ## Outlook
-After successful execution the (serialized and analyzed) cotent of the e-mails will be stored in the Elasticsearch database.
+After successful execution the (serialized and analyzed) content of the e-mails will be stored in the Elasticsearch database.
 Now you can use [emailIdxQuery](https://github.com/p-ho/emailIdxQuery) as a frontend to search in that data.
 
