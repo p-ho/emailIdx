@@ -36,7 +36,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='emailidx',
-    version='0.2.0',
+    version='0.2.1',
 
     description='Synchronizes emails from IMAP to Elasticsearch',
     author='Paul Hofmann',

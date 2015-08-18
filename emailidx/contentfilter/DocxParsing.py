@@ -51,7 +51,7 @@ def get_docx_as_text(docx_data):
     """
     in_stream = StringIO.StringIO(buf=docx_data)
     document = Document(in_stream)
-    root_doc_part = document._document_part.body
+    root_doc_part = document._body
     docx_as_text = _get_docx_part_as_text(root_doc_part)
     in_stream.close()
     return docx_as_text
